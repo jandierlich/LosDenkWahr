@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>LosDenkWahr</title>
+<meta name="description" content="Ein ruhiger Ort, um Gedanken kurz wegzuparken.">
+<meta name="theme-color" content="#0A0E27">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LosDenkWahr">
+<style>
+  :root{
+    --navy-deep: #0A0E27;
+    --navy: #121B3E;
+    --navy-soft: #1C2C5C;
+    --gold: #D9B98E;
+    --gold-soft: #E9D9B8;
+    --lavender: #ABA0CE;
+    --rose: #C9A6A6;
+    --ink: #ECE6E4;
+    --ink-dim: #C7C0D6;
+    --radius: 26px;
+  }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body{ height:100%; margin:0; overscroll-behavior:none; overflow-x:hidden; width:100%; touch-action: pan-x pan-y; background: var(--navy-deep); }
+  body{
+    font-family: -apple-system, sans-serif;
+    background: radial-gradient(120% 90% at 50% -10%, var(--navy-soft) 0%, var(--navy) 45%, var(--navy-deep) 100%);
+    color: var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  #stars{ position:fixed; inset:0; z-index:0; pointer-events:none; }
+  .screen{
+    position:relative;
+    z-index:1;
+    flex:1;
+    display:none;
+    flex-direction:column;
+    padding: max(24px, env(safe-area-inset-top)) 22px calc(max(24px, env(safe-area-inset-bottom)) + 26px);
+    min-height:100vh;
+  }
+  .screen.active{ display:flex; }
+  h1, h2, .display{
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    font-weight:500;
+    letter-spacing:0.2px;
+  }
+
+  /* ---------- HOME ---------- */
+  #home{ justify-content:space-between; align-items:center; text-align:center; }
+  .home-top{ padding-top: 8vh; }
+  .wordmark{ position:relative; display:flex; align-items:baseline; justify-content:center; gap:2px; margin-bottom:14px; padding-bottom:8px; }
+  .wordmark .w-moon{ width:0.42em; height:0.42em; align-self:center; margin:0 1px; opacity:0.9; }
+  .wordmark .w-swash{
+    position:absolute; left:50%; bottom:-2px; transform: translateX(-50%);
+    width:118px; height:10px; opacity:0.55;
+  }
+  .wordmark .w-serif{ font-family:'Bradley Hand','Snell Roundhand',cursive; font-weight:400; font-size:24px; color:var(--ink-dim); }
+  .wordmark .w-script{ font-family:'Bradley Hand','Snell Roundhand',cursive; font-weight:700; font-size:34px; color:var(--gold); margin-left:3px; }
+  .home-top h1{
+    font-size: 32px; margin:0 0 12px; color:var(--ink); font-weight:400;
+  }
+  .home-top h1 .script-accent{
+    font-family:'Snell Roundhand','Bradley Hand',cursive; font-weight:700; font-size:1.15em;
+    color: var(--gold); display:inline-block; transform: rotate(-1.5deg) translateY(1px);
+  }
+  .home-top p{ margin:0; color:var(--ink-dim); font-size:15px; max-width:280px; }
+
+  .moon-button{
+    width:168px; height:168px; border-radius:50%;
+    background: radial-gradient(circle at 38% 32%, var(--gold-soft), var(--gold) 60%, #b89468 100%);
+    border:none;
+    box-shadow: 0 0 0 1px rgba(217,185,142,0.15), 0 20px 60px -10px rgba(217,185,142,0.45), 0 0 40px rgba(217,185,142,0.25);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: transform .25s ease, box-shadow .35s ease;
+    position:relative;
+    touch-action: manipulation;
+    -webkit-user-select:none; user-select:none;
+  }
+  .moon-button:active{ transform: scale(0.96); }
+  .moon-button svg:first-of-type{ width:104px; height:104px; }
+  .mic-indicator{
+    position:absolute; right:8px; bottom:10px;
+    width:38px; height:38px; border-radius:50%;
+    background: rgba(28,44,92,0.15);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: inset 0 0 0 1px rgba(28,44,92,0.2);
+  }
+  .mic-indicator svg{ width:18px; height:18px; }
+  .moon-button.listening{ animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse{
+    0%,100%{ box-shadow: 0 0 0 1px rgba(217,185,142,0.15), 0 20px 60px -10px rgba(217,185,142,0.45), 0 0 40px rgba(217,185,142,0.25); }
+    50%{ box-shadow: 0 0 0 1px rgba(217,185,142,0.2), 0 20px 70px -6px rgba(217,185,142,0.6), 0 0 70px rgba(217,185,142,0.45); }
+  }
+  .mic-wrap{ width:100%; display:flex; flex-direction:column; align-items:center; }
+  .hint{ margin-top:18px; color:var(--ink-dim); font-size:14px; min-height:20px; width:100%; text-align:center; padding:0 12px; }
+
+  .home-bottom{ display:flex; flex-direction:column; align-items:center; gap:16px; padding-bottom:6px; }
+  .type-toggle{
+    background:none; border:1px solid rgba(245,243,238,0.18); color:var(--ink-dim);
+    padding:10px 18px; border-radius:999px; font-size:14px; font-family:inherit; cursor:pointer;
+  }
+  .footer-banner{
+    display:flex; justify-content:center; align-items:center; gap:16px;
+    width:fit-content; max-width:92%;
+  }
+  .footer-links{ display:flex; justify-content:center; align-items:center; gap:14px; font-size:13.5px; white-space:nowrap; }
+  .footer-links .divider{ color: rgba(245,243,238,0.2); font-size:14px; }
+  .footer-links a, .footer-links button{
+    color: rgba(236,230,228,0.7); text-decoration:none; background:none; border:none;
+    font-family:inherit; font-size:13.5px; cursor:pointer; padding:4px;
+  }
+
+  /* ---------- TEXT ENTRY ---------- */
+  #textEntry{ justify-content:flex-start; }
+  .text-wrap{ flex:1; display:flex; flex-direction:column; padding-top:6vh; }
+  #thoughtInput{
+    flex:1; background:none; border:none; color:var(--ink);
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif; font-size:24px; line-height:1.5;
+    resize:none; outline:none; caret-color: var(--gold);
+  }
+  #thoughtInput::placeholder{ color: rgba(245,243,238,0.3); }
+  .entry-actions{ display:flex; justify-content:space-between; align-items:center; padding-top:16px; }
+  .ghost-btn{
+    background:none; border:none; color:var(--ink-dim); font-family:inherit; font-size:15px; cursor:pointer; padding:10px;
+  }
+  .send-btn{
+    background: var(--gold); color:var(--navy-deep); border:none; border-radius:999px;
+    padding:13px 30px; font-family:'Snell Roundhand','Bradley Hand',cursive; font-size:22px; font-weight:700; cursor:pointer;
+  }
+  .send-btn:disabled{ opacity:0.35; }
+
+  /* ---------- RELEASE ANIMATION ---------- */
+  #release{ align-items:center; justify-content:center; }
+  .release-msg{ font-family:'Snell Roundhand','Bradley Hand',cursive; font-weight:700; font-size:30px; color: var(--gold-soft); margin-top:26px; opacity:0; transition:opacity .6s ease; text-align:center; }
+  .release-msg.show{ opacity:1; }
+  .rising-star{
+    position:absolute; width:14px; height:14px; border-radius:50%;
+    background: radial-gradient(circle, var(--gold-soft), var(--gold));
+    box-shadow: 0 0 18px 4px rgba(217,185,142,0.55);
+    animation: rise 2.4s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes rise{
+    0%{ transform: translateY(0) scale(1); opacity:1; }
+    70%{ opacity:1; }
+    100%{ transform: translateY(-46vh) scale(0.4); opacity:0; }
+  }
+
+  /* ---------- REVIEW ---------- */
+  #review{ }
+  .review-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .review-header h2{ font-size:23px; margin:0; font-weight:400; }
+  .review-header h2 .script-accent{ font-family:'Snell Roundhand','Bradley Hand',cursive; font-weight:700; font-size:1.35em; color:var(--gold); }
+  .close-x{ background:none; border:none; color:var(--ink-dim); font-size:22px; cursor:pointer; padding:6px; }
+  .review-sub{ color:var(--ink-dim); font-size:14px; margin:0 0 22px; }
+  .thought-list{ display:flex; flex-direction:column; gap:12px; overflow-y:auto; flex:1; padding-bottom:20px; }
+  .thought-card{
+    position:relative;
+    background: rgba(245,243,238,0.06); border:1px solid rgba(245,243,238,0.08);
+    border-radius: 18px; padding:16px 18px;
+  }
+  .thought-card .t-time{ font-size:12px; color: var(--gold); opacity:0.8; margin-bottom:6px; letter-spacing:0.4px; padding-right:26px; }
+  .thought-card .t-text{ font-family:Georgia,'Iowan Old Style','Times New Roman',serif; font-style:italic; font-weight:400; font-size:17px; line-height:1.45; margin:0 0 14px; }
+  .thought-actions{ display:flex; gap:10px; }
+  .t-delete{
+    position:absolute; top:12px; right:12px;
+    background:none; border:none; color: rgba(236,230,228,0.35);
+    font-size:19px; line-height:1; cursor:pointer; padding:4px 6px;
+  }
+  .t-delete:active{ color: rgba(236,230,228,0.7); }
+  .chip{
+    border:1px solid rgba(245,243,238,0.18); background:none; color:var(--ink-dim);
+    font-family:inherit; font-size:13px; padding:8px 14px; border-radius:999px; cursor:pointer;
+  }
+  .chip.keep{ color: var(--lavender); border-color: rgba(171,160,206,0.35); }
+  .chip.done{ color: var(--gold); border-color: rgba(217,185,142,0.35); }
+  .chip.done.active{ background: rgba(217,185,142,0.15); }
+  .chip.keep.active{ background: rgba(171,160,206,0.15); }
+  .empty-state{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--ink-dim); gap:10px; }
+  .empty-state .display{ font-size:19px; color:var(--ink); }
+
+  /* ---------- LEGAL ---------- */
+  #legal{ }
+  .legal-body{ overflow-y:auto; flex:1; color: var(--ink-dim); font-size:14.5px; line-height:1.7; }
+  .legal-body h2{ color: var(--ink); font-size:20px; margin:0 0 16px; }
+  .legal-body h3{ color: var(--ink); font-size:16px; margin:22px 0 8px; font-weight:600; }
+  .legal-body p{ margin:0 0 12px; }
+  .legal-tabs{ display:flex; gap:8px; margin-bottom:18px; }
+  .legal-tab{
+    flex:1; background: rgba(245,243,238,0.06); border:1px solid rgba(245,243,238,0.1);
+    color: var(--ink-dim); padding:10px; border-radius:12px; font-family:inherit; font-size:13px; cursor:pointer;
+  }
+  .legal-tab.active{ color: var(--ink); border-color: rgba(217,185,142,0.4); background: rgba(217,185,142,0.08); }
+  .legal-section{ display:none; }
+  .legal-section.active{ display:block; }
+  .placeholder{ color: var(--gold); }
+
+  ::-webkit-scrollbar{ display:none; }
+
+  .ios-hint{
+    position:fixed; left:16px; right:16px; bottom:max(16px, env(safe-area-inset-bottom));
+    z-index:5; display:none; align-items:center; gap:10px;
+    background: rgba(18,27,62,0.92); backdrop-filter: blur(6px);
+    border:1px solid rgba(236,230,228,0.14); border-radius:16px;
+    padding:12px 14px; font-size:13px; color: var(--ink-dim); line-height:1.4;
+  }
+  .ios-hint.show{ display:flex; }
+  .ios-hint button{
+    background:none; border:none; color: var(--ink-dim); font-size:18px; cursor:pointer; padding:0 4px; margin-left:auto;
+  }
+
+  /* ---------- ONBOARDING ---------- */
+  .onboarding-overlay{
+    position:fixed; inset:0; z-index:30;
+    background: rgba(6,9,26,0.88); backdrop-filter: blur(8px);
+    display:none; align-items:center; justify-content:center; padding:28px;
+  }
+  .onboarding-overlay.show{ display:flex; }
+  .onboarding-card{
+    max-width:340px; text-align:center;
+    background: linear-gradient(180deg, rgba(28,44,92,0.55), rgba(18,27,62,0.55));
+    border:1px solid rgba(236,230,228,0.1);
+    border-radius: 28px; padding:34px 26px 28px;
+  }
+  .onboarding-moon{ width:84px; height:84px; margin:0 auto 20px; }
+  .onboarding-moon svg{ width:100%; height:100%; }
+  .onboarding-card h2{
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif; font-weight:400; font-size:22px; color:var(--ink);
+    margin:0 0 14px; line-height:1.3;
+  }
+  .onboarding-card h2 .w-serif{ font-weight:600; font-size:0.9em; }
+  .onboarding-card h2 .w-script{ font-family:'Bradley Hand','Snell Roundhand',cursive; font-weight:700; color:var(--gold); font-size:1.15em; margin-left:2px; }
+  .w-moon-inline{ width:0.4em; height:0.4em; margin:0 1px; opacity:0.9; }
+  .onboarding-card p{ color: var(--ink-dim); font-size:14.5px; line-height:1.6; margin:0 0 24px; }
+  .onboarding-card button{
+    background: var(--gold); color: var(--navy-deep); border:none; border-radius:999px;
+    padding:13px 30px; font-family:'Bradley Hand','Snell Roundhand',cursive; font-weight:700; font-size:18px; cursor:pointer;
+  }
+
+  .undo-btn{
+    margin-top:34px; background:none; border:1px solid rgba(236,230,228,0.2); color: var(--ink-dim);
+    padding:9px 20px; border-radius:999px; font-size:13.5px; cursor:pointer;
+    opacity:0; transition: opacity .4s ease; pointer-events:none;
+  }
+  .undo-btn.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+
+<div id="onboarding" class="onboarding-overlay">
+  <div class="onboarding-card">
+    <div class="onboarding-moon">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="46" fill="url(#og)"/>
+        <defs>
+          <radialGradient id="og" cx="38%" cy="32%" r="70%">
+            <stop offset="0%" stop-color="var(--gold-soft)"/>
+            <stop offset="60%" stop-color="var(--gold)"/>
+            <stop offset="100%" stop-color="#b89468"/>
+          </radialGradient>
+        </defs>
+        <path d="M32 46 Q40 38 48 46" stroke="#121B3E" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+        <path d="M56 46 Q64 38 72 46" stroke="#121B3E" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+        <path d="M38 60 Q52 71 66 60" stroke="#121B3E" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <h2>Willkommen bei<br><span class="w-serif">LosDenk</span><svg class="w-moon-inline" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2a8 8 0 1 0 8 9.2A6.5 6.5 0 0 1 10 2z" fill="var(--gold)"/></svg><span class="w-script">Wahr</span></h2>
+    <p>Tippe auf den Mond und sprich einen Gedanken. Er wird weggeparkt &mdash; ohne Antwort, ohne Bewertung. Abends kannst Du in Ruhe nachsehen, was da war.</p>
+    <button id="onboardingDismiss">Los geht&rsquo;s</button>
+  </div>
+</div>
+
+
+<canvas id="stars"></canvas>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="home-top">
+    <div class="wordmark">
+      <span class="w-serif">LosDenk</span><svg class="w-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2a8 8 0 1 0 8 9.2A6.5 6.5 0 0 1 10 2z" fill="var(--gold)"/></svg><span class="w-script">Wahr</span>
+      <svg class="w-swash" viewBox="0 0 160 14" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M2 8 Q40 2 80 7 T158 6" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>Was beschäftigt <span class="script-accent">Dich?</span></h1>
+    <p>Sprich es aus oder schreib es kurz auf. Du bekommst keine Antwort &mdash; nur einen ruhigen Ort dafür.</p>
+  </div>
+
+  <div class="mic-wrap">
+    <button class="moon-button" id="micBtn" aria-label="Gedanken aufnehmen">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- geschlossene, zufriedene Augen -->
+        <path d="M32 44 Q40 36 48 44" stroke="#121B3E" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+        <path d="M56 44 Q64 36 72 44" stroke="#121B3E" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+        <!-- sanftes Lächeln -->
+        <path d="M38 60 Q52 72 66 60" stroke="#121B3E" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+        <!-- zarte Wangen -->
+        <circle cx="28" cy="56" r="4.5" fill="#121B3E" opacity="0.14"/>
+        <circle cx="76" cy="56" r="4.5" fill="#121B3E" opacity="0.14"/>
+      </svg>
+      <div class="mic-indicator" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#121B3E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </div>
+    </button>
+    <div class="hint" id="micHint">Antippen und sprechen</div>
+  </div>
+
+  <div class="home-bottom">
+    <button class="type-toggle" id="switchToText">Lieber tippen</button>
+    <div class="footer-banner">
+      <div class="footer-links">
+        <button id="openReview">Heute Abend (<span id="pendingCount">0</span>)</button>
+        <span class="divider">&middot;</span>
+        <button id="openLegalFooter">Impressum &amp; Datenschutz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="iosHint" class="ios-hint">
+  <span>Zum Home-Bildschirm: Teilen-Symbol <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><rect x="4" y="12" width="16" height="8" rx="2"/></svg> antippen, dann &bdquo;Zum Home-Bildschirm&ldquo;</span>
+  <button id="dismissIosHint" aria-label="Schließen">&times;</button>
+</div>
+
+<!-- TEXT ENTRY -->
+<div id="textEntry" class="screen">
+  <div class="text-wrap">
+    <textarea id="thoughtInput" placeholder="Schreib es einfach hin&hellip;" autocomplete="off" autocapitalize="sentences"></textarea>
+    <div class="entry-actions">
+      <button class="ghost-btn" id="cancelText">Abbrechen</button>
+      <button class="send-btn" id="sendText" disabled>Wegparken</button>
+    </div>
+  </div>
+</div>
+
+<!-- RELEASE ANIMATION -->
+<div id="release" class="screen">
+  <div class="release-msg" id="releaseMsg">Losgelassen.</div>
+  <button class="undo-btn" id="undoBtn">Doch nicht</button>
+</div>
+
+<!-- REVIEW -->
+<div id="review" class="screen">
+  <div class="review-header">
+    <h2>Heute <span class="script-accent">Abend</span></h2>
+    <button class="close-x" id="closeReview">&times;</button>
+  </div>
+  <p class="review-sub">Was Du losgedacht hast. In aller Ruhe.</p>
+  <div class="thought-list" id="thoughtList"></div>
+</div>
+
+<!-- LEGAL -->
+<div id="legal" class="screen">
+  <div class="review-header">
+    <h2>Rechtliches</h2>
+    <button class="close-x" id="closeLegal">&times;</button>
+  </div>
+  <div class="legal-tabs">
+    <button class="legal-tab active" data-tab="impressum">Impressum</button>
+    <button class="legal-tab" data-tab="datenschutz">Datenschutz</button>
+  </div>
+  <div class="legal-body">
+    <div class="legal-section active" id="tab-impressum">
+      <h3>Angaben gemäß § 5 DDG</h3>
+      <p>
+        Jan Dierlich<br>
+        Steenacker 33<br>
+        25499 Tangstedt<br>
+        Deutschland
+      </p>
+      <h3>Kontakt</h3>
+      <p>
+        E-Mail: jandierlich@googlemail.com
+      </p>
+      <h3>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h3>
+      <p>Jan Dierlich, Anschrift wie oben</p>
+    </div>
+    <div class="legal-section" id="tab-datenschutz">
+      <h3>Datenschutzerklärung</h3>
+      <p>Diese App speichert Deine Gedanken ausschließlich lokal auf Deinem Gerät (im lokalen Speicher des Browsers). Es findet keine Übertragung an einen Server statt, es werden keine Konten angelegt und keine Daten an Dritte weitergegeben.</p>
+      <h3>Keine externen Ressourcen</h3>
+      <p>Diese App lädt keine Schriften, Skripte oder sonstigen Inhalte von externen Servern (z. B. Google Fonts). Alle verwendeten Schriftarten sind auf Deinem Gerät bereits vorinstalliert. Dadurch werden beim Öffnen der App keine Daten wie Deine IP-Adresse an Dritte übertragen.</p>
+      <h3>Spracheingabe</h3>
+      <p>Wenn Du die Mikrofon-Funktion nutzt, verarbeitet Dein Browser bzw. Betriebssystem die Spracherkennung. Je nach Gerät kann dies technisch bedingt eine Verarbeitung durch den Anbieter des Betriebssystems (z. B. Apple) erfordern. Es werden dabei keine Daten durch diese App selbst gespeichert oder weitergeleitet.</p>
+      <h3>Speicherort</h3>
+      <p>Alle Einträge verbleiben im lokalen Speicher (localStorage) Deines Geräts. Löschst Du die App oder den Browser-Speicher, werden auch die Einträge unwiderruflich gelöscht. Es gibt keine Cloud-Sicherung. Ebenfalls lokal gespeichert werden zwei einzelne Merker, ob die Einführung bzw. ein iOS-Hinweis bereits gesehen wurden – ohne weitere Inhalte.</p>
+      <h3>Verantwortlicher</h3>
+      <p>Jan Dierlich, Kontakt siehe Impressum.</p>
+      <h3>Deine Rechte</h3>
+      <p>Da keine Daten außerhalb Deines Geräts verarbeitet werden, entstehen keine externen Auskunfts- oder Löschansprüche &mdash; Du hast die vollständige Kontrolle direkt in der App (Löschfunktion je Eintrag).</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Sternenhimmel Hintergrund ----------
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resize(){
+    canvas.width = innerWidth * devicePixelRatio;
+    canvas.height = innerHeight * devicePixelRatio;
+    canvas.style.width = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    stars = Array.from({length: 70}, () => ({
+      x: Math.random()*innerWidth,
+      y: Math.random()*innerHeight*0.75,
+      r: Math.random()*1.4 + 0.3,
+      p: Math.random()*Math.PI*2,
+      s: Math.random()*0.02 + 0.005
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const st of stars){
+      st.p += st.s;
+      const a = 0.35 + Math.sin(st.p)*0.35;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(245,243,238,${Math.max(0,a)})`;
+      ctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  addEventListener('resize', resize);
+  resize(); draw();
+
+  // ---------- Storage ----------
+  const KEY = 'losgedacht_thoughts';
+  function loadThoughts(){
+    try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; }
+  }
+  function saveThoughts(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+  function addThought(text){
+    const list = loadThoughts();
+    const id = Date.now();
+    list.unshift({ id, text, time: new Date().toISOString(), status:'open' });
+    saveThoughts(list);
+    updatePendingCount();
+    return id;
+  }
+  function removeThought(id){
+    const list = loadThoughts().filter(t => t.id !== id);
+    saveThoughts(list);
+    updatePendingCount();
+  }
+  function updatePendingCount(){
+    const open = loadThoughts().filter(t => t.status === 'open').length;
+    document.getElementById('pendingCount').textContent = open;
+  }
+
+  // ---------- Screens ----------
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- Home / Mic ----------
+  const micBtn = document.getElementById('micBtn');
+  const micHint = document.getElementById('micHint');
+  let recognition = null;
+  let SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  micBtn.addEventListener('click', () => {
+    if(!SpeechRec){
+      show('textEntry');
+      document.getElementById('thoughtInput').focus();
+      return;
+    }
+    if(micBtn.classList.contains('listening')){
+      recognition && recognition.stop();
+      return;
+    }
+    recognition = new SpeechRec();
+    recognition.lang = 'de-DE';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    micBtn.classList.add('listening');
+    micHint.textContent = 'Ich höre zu…';
+
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript.trim();
+      if(text) releaseThought(text);
+    };
+    recognition.onerror = () => {
+      micHint.textContent = 'Hat nicht geklappt. Tippen geht auch.';
+    };
+    recognition.onend = () => {
+      micBtn.classList.remove('listening');
+      setTimeout(()=>{ micHint.textContent = 'Antippen und sprechen'; }, 1800);
+    };
+    try{ recognition.start(); }catch(e){ show('textEntry'); }
+  });
+
+  // ---------- Text entry ----------
+  const input = document.getElementById('thoughtInput');
+  const sendBtn = document.getElementById('sendText');
+  document.getElementById('switchToText').addEventListener('click', () => {
+    show('textEntry'); input.value=''; sendBtn.disabled = true;
+    setTimeout(()=>input.focus(), 200);
+  });
+  document.getElementById('cancelText').addEventListener('click', () => { input.value=''; show('home'); });
+  input.addEventListener('input', () => { sendBtn.disabled = input.value.trim().length === 0; });
+  sendBtn.addEventListener('click', () => {
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    releaseThought(text);
+  });
+
+  // ---------- Release animation ----------
+  let releaseTimers = [];
+  function clearReleaseTimers(){ releaseTimers.forEach(t => clearTimeout(t)); releaseTimers = []; }
+
+  function releaseThought(text){
+    clearReleaseTimers();
+    const id = addThought(text);
+    if(navigator.vibrate){ navigator.vibrate(14); }
+
+    show('release');
+    const releaseScreen = document.getElementById('release');
+    const msg = document.getElementById('releaseMsg');
+    const undoBtn = document.getElementById('undoBtn');
+    msg.classList.remove('show');
+    undoBtn.classList.remove('show');
+    msg.textContent = pickReleasePhrase();
+
+    // spawn rising star
+    const star = document.createElement('div');
+    star.className = 'rising-star';
+    star.style.left = (innerWidth/2 - 7) + 'px';
+    star.style.top = (innerHeight*0.55) + 'px';
+    releaseScreen.appendChild(star);
+
+    const onUndo = () => {
+      clearReleaseTimers();
+      removeThought(id);
+      star.remove();
+      undoBtn.classList.remove('show');
+      show('home');
+    };
+    undoBtn.onclick = onUndo;
+
+    releaseTimers.push(setTimeout(()=> msg.classList.add('show'), 300));
+    releaseTimers.push(setTimeout(()=> undoBtn.classList.add('show'), 500));
+    releaseTimers.push(setTimeout(()=>{ star.remove(); }, 2500));
+    releaseTimers.push(setTimeout(()=>{ undoBtn.classList.remove('show'); }, 2900));
+    releaseTimers.push(setTimeout(()=>{ show('home'); }, 3000));
+  }
+  const phrases = [
+    'Losgelassen.', 'Das ist jetzt geparkt.', 'Gut, dass es raus ist.', 'Abgelegt für heute Abend.'
+  ];
+  function pickReleasePhrase(){ return phrases[Math.floor(Math.random()*phrases.length)]; }
+
+  // ---------- Review ----------
+  function renderReview(){
+    const list = loadThoughts();
+    const container = document.getElementById('thoughtList');
+    container.innerHTML = '';
+    if(list.length === 0){
+      container.innerHTML = '<div class="empty-state"><div class="display">Noch ist es still hier.</div><div>Und das ist auch gut so. Alles, was Du loswirst, taucht hier auf.</div></div>';
+      return;
+    }
+    list.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'thought-card';
+      const d = new Date(t.time);
+      const timeStr = d.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' · ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+      card.innerHTML = `
+        <button class="t-delete" data-id="${t.id}" aria-label="Endgültig löschen">&times;</button>
+        <div class="t-time">${timeStr}</div>
+        <p class="t-text"></p>
+        <div class="thought-actions">
+          <button class="chip done ${t.status==='done'?'active':''}" data-id="${t.id}" data-action="done">Erledigt</button>
+          <button class="chip keep ${t.status==='keep'?'active':''}" data-id="${t.id}" data-action="keep">Behalten</button>
+        </div>
+      `;
+      card.querySelector('.t-text').textContent = t.text;
+      container.appendChild(card);
+    });
+    container.querySelectorAll('.t-delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        removeThought(Number(btn.dataset.id));
+        renderReview();
+      });
+    });
+    container.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const action = btn.dataset.action;
+        const list = loadThoughts();
+        const item = list.find(x => x.id === id);
+        if(item){
+          item.status = item.status === action ? 'open' : action;
+          saveThoughts(list);
+          renderReview();
+          updatePendingCount();
+        }
+      });
+    });
+  }
+  document.getElementById('openReview').addEventListener('click', () => { renderReview(); show('review'); });
+  document.getElementById('closeReview').addEventListener('click', () => show('home'));
+
+  // ---------- Legal ----------
+  document.getElementById('openLegalFooter').addEventListener('click', () => show('legal'));
+  document.getElementById('closeLegal').addEventListener('click', () => show('home'));
+  document.querySelectorAll('.legal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.legal-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.legal-section').forEach(s=>s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- Init ----------
+  updatePendingCount();
+
+  // ---------- Erster Start ----------
+  (function(){
+    if(!localStorage.getItem('losgedacht_onboarded')){
+      document.getElementById('onboarding').classList.add('show');
+    }
+    document.getElementById('onboardingDismiss').addEventListener('click', () => {
+      document.getElementById('onboarding').classList.remove('show');
+      localStorage.setItem('losgedacht_onboarded', '1');
+    });
+  })();
+
+  // ---------- iOS Installations-Hinweis ----------
+  (function(){
+    const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    const dismissed = localStorage.getItem('losgedacht_ios_hint_dismissed');
+    const hint = document.getElementById('iosHint');
+    if(isIos && !isStandalone && !dismissed){
+      hint.classList.add('show');
+    }
+    document.getElementById('dismissIosHint').addEventListener('click', () => {
+      hint.classList.remove('show');
+      localStorage.setItem('losgedacht_ios_hint_dismissed', '1');
+    });
+  })();
+
+  // ---------- Service worker ----------
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    });
+  }
+})();
+</script>
+</body>
+</html>
